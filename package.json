@@ -1,6 +1,0 @@
-{
-  "name": "techtips-app",
-  "version": "1.0.0",
-  "description": "Tech Tips by LLM — AI-powered GitHub repo search",
-  "engines": { "node": ">=18" }
-}
