@@ -1,0 +1,5 @@
+To remove hyperlinks for a section of a document, or the entire document:
+
+Select the text where you want to remove the links, then click CTRL+SHIFT+F9.
+
+To remove all links in an entire document, press CTRL+A, then click CTRL-SHIFT-F9.
