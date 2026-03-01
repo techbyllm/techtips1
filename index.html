@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tech Tips by LLM</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0a0a0f; --surface: #111118; --surface2: #1a1a24; --border: #2a2a3a;
+    --accent: #7fff8c; --accent2: #4fc8ff; --text: #e8e8f0; --muted: #6b6b80;
+    --danger: #ff6b6b; --warn: #ffd07a; --orange: #ff9f7a; --purple: #d07aff; --lavender: #c8a4ff;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; min-height: 100vh; overflow-x: hidden; }
+  body::before {
+    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background-image: linear-gradient(rgba(127,255,140,.03) 1px, transparent 1px), linear-gradient(90deg, rgba(127,255,140,.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  .container { max-width: 820px; margin: 0 auto; padding: 60px 24px 80px; position: relative; z-index: 1; }
+
+  header { margin-bottom: 48px; animation: fadeDown .6s ease both; }
+  .logo-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .logo-icon { width: 36px; height: 36px; background: var(--accent); border-radius: 8px; display: grid; place-items: center; font-size: 18px; }
+  h1 { font-size: 2rem; font-weight: 800; letter-spacing: -0.04em; }
+  h1 span { color: var(--accent); }
+  .tagline { font-family: 'DM Mono', monospace; font-size: .8rem; color: var(--muted); letter-spacing: .05em; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; margin-bottom: 32px; animation: fadeDown .6s .1s ease both; }
+
+  .repo-badge { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 20px; }
+  .repo-badge .label { font-family: 'DM Mono', monospace; font-size: .68rem; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 2px; }
+  .repo-badge .value { font-family: 'DM Mono', monospace; font-size: .85rem; color: var(--accent); }
+  .repo-badge .locked { font-family: 'DM Mono', monospace; font-size: .68rem; color: var(--muted); padding: 3px 8px; border: 1px solid var(--border); border-radius: 6px; }
+
+  .field label { display: block; font-family: 'DM Mono', monospace; font-size: .72rem; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 8px; }
+  .search-row { display: flex; gap: 12px; align-items: flex-end; }
+  .search-row .field { flex: 1; }
+  input[type="text"] { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; color: var(--text); font-family: 'DM Mono', monospace; font-size: .9rem; outline: none; transition: border-color .2s, box-shadow .2s; }
+  input[type="text"]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(127,255,140,.1); }
+  input[type="text"]::placeholder { color: var(--muted); }
+
+  .btn { display: inline-flex; align-items: center; gap: 8px; background: var(--accent); color: #0a0a0f; border: none; border-radius: 10px; padding: 12px 24px; font-family: 'Syne', sans-serif; font-size: .9rem; font-weight: 700; cursor: pointer; transition: transform .15s, box-shadow .15s, opacity .15s; white-space: nowrap; }
+  .btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(127,255,140,.3); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+  .filters { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; align-items: center; }
+  .filters .label { font-family: 'DM Mono', monospace; font-size: .72rem; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; margin-right: 4px; }
+  .chip { font-family: 'DM Mono', monospace; font-size: .75rem; padding: 5px 12px; border-radius: 100px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; transition: all .15s; }
+  .chip.active { border-color: var(--accent); color: var(--accent); background: rgba(127,255,140,.08); }
+
+  .status-bar { display: flex; align-items: center; gap: 10px; font-family: 'DM Mono', monospace; font-size: .78rem; color: var(--muted); margin-bottom: 20px; min-height: 24px; }
+  .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: pulse 1s infinite; }
+
+  .error-msg { background: rgba(255,107,107,.08); border: 1px solid rgba(255,107,107,.3); border-radius: 10px; padding: 14px 18px; font-family: 'DM Mono', monospace; font-size: .82rem; color: var(--danger); }
+
+  .ai-panel { background: linear-gradient(135deg, rgba(127,255,140,.05), rgba(79,200,255,.05)); border: 1px solid rgba(127,255,140,.2); border-radius: 16px; padding: 24px; margin-bottom: 24px; animation: fadeIn .4s ease; }
+  .ai-panel-hdr { font-family: 'DM Mono', monospace; font-size: .72rem; color: var(--accent); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 12px; }
+  .ai-panel p { font-size: .9rem; line-height: 1.7; color: var(--text); }
+
+  .results-hdr { font-family: 'DM Mono', monospace; font-size: .75rem; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 12px; }
+
+  .result { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 10px; cursor: pointer; transition: border-color .2s, transform .2s; animation: slideUp .3s ease both; }
+  .result:hover { border-color: rgba(127,255,140,.3); transform: translateX(4px); }
+  .result-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+  .badge { font-family: 'DM Mono', monospace; font-size: .68rem; padding: 3px 8px; border-radius: 6px; border: 1px solid; white-space: nowrap; margin-top: 2px; }
+  .b-readme { color: var(--accent);   border-color: rgba(127,255,140,.3); background: rgba(127,255,140,.08); }
+  .b-doc     { color: var(--accent2); border-color: rgba(79,200,255,.3);  background: rgba(79,200,255,.08); }
+  .b-code    { color: var(--warn);    border-color: rgba(255,208,122,.3); background: rgba(255,208,122,.08); }
+  .b-config  { color: var(--orange);  border-color: rgba(255,159,122,.3); background: rgba(255,159,122,.08); }
+  .b-test    { color: var(--purple);  border-color: rgba(208,122,255,.3); background: rgba(208,122,255,.08); }
+  .b-file    { color: var(--lavender);border-color: rgba(200,164,255,.3); background: rgba(200,164,255,.08); }
+  .result-path { font-family: 'DM Mono', monospace; font-size: .82rem; color: var(--text); word-break: break-all; }
+  .result-path span { color: var(--accent); }
+  .rel-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .rel-track { flex: 1; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .rel-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 2px; transition: width .8s cubic-bezier(.34,1.56,.64,1); }
+  .rel-score { font-family: 'DM Mono', monospace; font-size: .7rem; color: var(--muted); width: 30px; text-align: right; }
+  .result-reason { font-size: .88rem; line-height: 1.6; color: #b8b8cc; }
+
+  .empty { text-align: center; padding: 60px 20px; color: var(--muted); }
+  .empty .icon { font-size: 3rem; margin-bottom: 16px; }
+  .empty h3 { font-size: 1.1rem; margin-bottom: 8px; color: var(--text); }
+  .empty p { font-family: 'DM Mono', monospace; font-size: .8rem; line-height: 1.7; }
+  .empty em { color: var(--accent2); font-style: normal; }
+
+  .skel-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 10px; }
+  .skel { background: linear-gradient(90deg, var(--surface2) 25%, #22222e 50%, var(--surface2) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 6px; display: inline-block; }
+
+  @keyframes fadeDown { from{opacity:0;transform:translateY(-14px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeIn   { from{opacity:0} to{opacity:1} }
+  @keyframes slideUp  { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes pulse    { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.8)} }
+  @keyframes shimmer  { from{background-position:200% 0} to{background-position:-200% 0} }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="logo-row">
+      <div class="logo-icon">💡</div>
+      <h1>Tech Tips <span>by LLM</span></h1>
+    </div>
+    <p class="tagline">// AI-powered natural language search for GitHub repositories</p>
+  </header>
+
+  <div class="card">
+    <div class="repo-badge">
+      <span style="font-size:.9rem">📁</span>
+      <div style="flex:1">
+        <div class="label">Repository</div>
+        <div class="value">github.com/techbyllm/techtips</div>
+      </div>
+      <span class="locked">locked</span>
+    </div>
+
+    <div class="search-row">
+      <div class="field" style="flex:1">
+        <label>Natural Language Query</label>
+        <input type="text" id="queryInput" placeholder="e.g. how is authentication configured?" />
+      </div>
+      <button class="btn" id="searchBtn" onclick="startSearch()">
+        <span>⚡</span> Search
+      </button>
+    </div>
+
+    <div class="filters">
+      <span class="label">Search in:</span>
+      <button class="chip active" data-filter="readme"  onclick="toggleFilter(this)">README</button>
+      <button class="chip active" data-filter="docs"    onclick="toggleFilter(this)">Docs</button>
+      <button class="chip active" data-filter="code"    onclick="toggleFilter(this)">Code</button>
+      <button class="chip active" data-filter="config"  onclick="toggleFilter(this)">Config</button>
+      <button class="chip active" data-filter="tests"   onclick="toggleFilter(this)">Tests</button>
+      <button class="chip active" data-filter="files"   onclick="toggleFilter(this)">Other</button>
+    </div>
+  </div>
+
+  <div id="statusBar" class="status-bar" style="display:none"></div>
+  <div id="output"></div>
+</div>
+
+<script>
+const ACTIVE = new Set(['readme','docs','code','config','tests','files']);
+
+function toggleFilter(el) {
+  const f = el.dataset.filter;
+  ACTIVE.has(f) ? (ACTIVE.delete(f), el.classList.remove('active')) : (ACTIVE.add(f), el.classList.add('active'));
+}
+
+function setStatus(msg, loading = true) {
+  const bar = document.getElementById('statusBar');
+  if (!msg) { bar.style.display = 'none'; return; }
+  bar.style.display = 'flex';
+  bar.innerHTML = loading
+    ? `<div class="pulse"></div><span>${msg}</span>`
+    : `<span style="color:var(--accent)">✓</span><span>${msg}</span>`;
+}
+
+function badgeClass(type) {
+  return { readme:'b-readme', doc:'b-doc', code:'b-code', config:'b-config', test:'b-test', file:'b-file' }[type] || 'b-file';
+}
+function badgeLabel(type) {
+  return { readme:'README', doc:'DOC', code:'CODE', config:'CONFIG', test:'TEST', file:'FILE' }[type] || 'FILE';
+}
+
+async function startSearch() {
+  const query = document.getElementById('queryInput').value.trim();
+  const output = document.getElementById('output');
+  if (!query) { output.innerHTML = '<div class="error-msg">Please enter a search query.</div>'; return; }
+
+  const btn = document.getElementById('searchBtn');
+  btn.disabled = true;
+  output.innerHTML = '';
+  setStatus('Searching repository…');
+
+  // Skeleton
+  output.innerHTML = [0,1,2].map(() => `
+    <div class="skel-card">
+      <div style="display:flex;gap:10px;margin-bottom:12px">
+        <span class="skel" style="width:60px;height:20px"></span>
+        <span class="skel" style="width:200px;height:20px"></span>
+      </div>
+      <span class="skel" style="width:100%;height:12px;margin-bottom:8px;display:block"></span>
+      <span class="skel" style="width:75%;height:12px;display:block"></span>
+    </div>`).join('');
+
+  try {
+    const res = await fetch('/api/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query, filters: [...ACTIVE] }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || `Server error ${res.status}`);
+
+    output.innerHTML = '';
+    setStatus(`Found ${data.results?.length || 0} result(s)`, false);
+
+    if (data.summary) {
+      output.innerHTML += `<div class="ai-panel"><div class="ai-panel-hdr">🤖 AI Summary</div><p>${data.summary}</p></div>`;
+    }
+
+    if (!data.results?.length) {
+      output.innerHTML += `<div class="empty"><div class="icon">🔍</div><h3>No results found</h3><p>Try rephrasing your query or enabling more filters.</p></div>`;
+    } else {
+      output.innerHTML += `<div class="results-hdr">— ${data.results.length} result(s) —</div>`;
+      data.results.forEach((r, i) => {
+        const parts = r.path.split('/');
+        const fname = parts.pop();
+        const dir   = parts.length ? parts.join('/') + '/' : '';
+        const url   = `https://github.com/${data.owner}/${data.repo}/blob/${data.branch}/${r.path}`;
+        output.innerHTML += `
+          <div class="result" style="animation-delay:${i * 0.06}s" onclick="window.open('${url}','_blank')">
+            <div class="result-top">
+              <span class="badge ${badgeClass(r.type)}">${badgeLabel(r.type)}</span>
+              <div class="result-path">${dir}<span>${fname}</span></div>
+            </div>
+            <div class="rel-bar">
+              <div class="rel-track"><div class="rel-fill" style="width:${r.relevance||50}%"></div></div>
+              <span class="rel-score">${r.relevance||'?'}%</span>
+            </div>
+            <div class="result-reason">${r.reason}</div>
+          </div>`;
+      });
+    }
+  } catch (err) {
+    output.innerHTML = '';
+    setStatus('');
+    output.innerHTML = `<div class="error-msg">⚠ ${err.message}</div>`;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+document.getElementById('queryInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') startSearch();
+});
+</script>
+</body>
+</html>
