@@ -18,13 +18,13 @@
 }
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;min-height:100vh;overflow-x:hidden}
+/* Strong radial glow from top-center */
 body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
-  background:radial-gradient(ellipse 70% 45% at 50% -5%,rgba(212,175,100,.08) 0%,transparent 70%),
-             radial-gradient(ellipse 40% 30% at 85% 85%,rgba(94,207,184,.04) 0%,transparent 60%)}
-body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
-  background-image:linear-gradient(rgba(212,175,100,.022) 1px,transparent 1px),linear-gradient(90deg,rgba(212,175,100,.022) 1px,transparent 1px);
-  background-size:52px 52px;
-  mask-image:radial-gradient(ellipse 80% 80% at 50% 40%,black 20%,transparent 100%)}
+  background:
+    radial-gradient(ellipse 80% 60% at 50% -2%, rgba(212,175,100,.50) 0%, rgba(212,175,100,.18) 45%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 12% 65%, rgba(94,207,184,.12) 0%, transparent 60%),
+    radial-gradient(ellipse 45% 35% at 90% 75%, rgba(106,176,224,.10) 0%, transparent 55%)}
+/* Canvas dot-grid injected by JS below */
 .wrap{max-width:860px;margin:0 auto;padding:72px 28px 100px;position:relative;z-index:1}
 
 /* HEADER */
