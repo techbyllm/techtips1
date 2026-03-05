@@ -158,14 +158,15 @@ input[type=text]::placeholder{color:var(--text3)}
 
 @media(max-width:600px){.srow{flex-direction:column;align-items:stretch}.btn{justify-content:center}}
 </style>
-</head>
+ </head>
 <body>
 <div class="wrap">
 
   <header>
     <div class="eyebrow">Knowledge Intelligence</div>
     <h1>Tech Tips <em>by LLM</em></h1>
-    <p class="tagline">Ask anything in plain English — AI searches your repository and surfaces exactly what you need.</p>
+    <h3>Tips on lesser-known features of popular software</h3>
+    <p class="tagline">Ask anything in plain English, and AI searches the Tech Tips knowledge base for answers.</p>
   </header>
 
   <div class="card">
@@ -181,7 +182,7 @@ input[type=text]::placeholder{color:var(--text3)}
     <div class="srow">
       <div class="field">
         <label class="flabel" for="queryInput">Your Question</label>
-        <input type="text" id="queryInput" placeholder="e.g. How do I remove hyperlinks from a Word document?" />
+        <input type="text" id="queryInput" placeholder="e.g. How do I remove all hyperlinks at once from a Word document?" />
       </div>
       <button class="btn" id="searchBtn" onclick="startSearch()">
         <span>✦</span> Search
@@ -192,10 +193,6 @@ input[type=text]::placeholder{color:var(--text3)}
       <span class="fltr-lbl">Search in</span>
       <button class="chip active" data-filter="readme"  onclick="toggleFilter(this)">README</button>
       <button class="chip active" data-filter="docs"    onclick="toggleFilter(this)">Docs</button>
-      <button class="chip active" data-filter="code"    onclick="toggleFilter(this)">Code</button>
-      <button class="chip active" data-filter="config"  onclick="toggleFilter(this)">Config</button>
-      <button class="chip active" data-filter="tests"   onclick="toggleFilter(this)">Tests</button>
-      <button class="chip active" data-filter="files"   onclick="toggleFilter(this)">Other</button>
     </div>
   </div>
 
@@ -229,8 +226,8 @@ async function startSearch(){
       out.innerHTML+=`<div class="res-hdr">${data.results.length} result${data.results.length!==1?'s':''}</div>`;
       data.results.forEach((r,i)=>{
         const parts=r.path.split('/');const fname=parts.pop();const dir=parts.length?parts.join('/')+'/ ':'';
-        const rawUrl=`https://raw.githubusercontent.com/${data.owner}/${data.repo}/${data.branch}/${r.path}`;
-        out.innerHTML+=`<div class="result" style="animation-delay:${i*.07}s" onclick="openFile('${rawUrl}','${r.path}','${r.type}')"><div class="res-top"><span class="badge ${bc(r.type)}">${bl(r.type)}</span><div class="res-path">${dir?`<span>${dir}</span>`:''}<span class="fn">${fname}</span></div></div><div class="rel-bar"><div class="rel-track"><div class="rel-fill" style="width:${r.relevance||50}%"></div></div><span class="rel-score">${r.relevance||'—'}%</span></div><div class="res-reason">${r.reason}</div></div>`;
+        const url=`https://github.com/${data.owner}/${data.repo}/blob/${data.branch}/${r.path}`;
+        out.innerHTML+=`<div class="result" style="animation-delay:${i*.07}s" onclick="window.open('${url}','_blank')"><div class="res-top"><span class="badge ${bc(r.type)}">${bl(r.type)}</span><div class="res-path">${dir?`<span>${dir}</span>`:''}<span class="fn">${fname}</span></div></div><div class="rel-bar"><div class="rel-track"><div class="rel-fill" style="width:${r.relevance||50}%"></div></div><span class="rel-score">${r.relevance||'—'}%</span></div><div class="res-reason">${r.reason}</div></div>`;
       });
     }
   }catch(err){out.innerHTML='';setStatus('');out.innerHTML=`<div class="err">⚠ ${err.message}</div>`}
@@ -239,192 +236,8 @@ async function startSearch(){
 document.getElementById('queryInput').addEventListener('keydown',e=>{if(e.key==='Enter')startSearch()});
 </script>
 
-<script>
-function openFile(rawUrl, path, type) {
-  const ext = path.split('.').pop().toLowerCase();
-  const fname = path.split('/').pop();
+<p style="color: #FFFFFF; text-align: center; font-size: 10px">App Creator: <a href = "https://techbyllm.com" target="_blank" rel="noopener noreferrer" style="color: #FFFFFF">Tech by LLM</a></p>
+<p>.</p>
 
-  // Determine how to render
-  const isImage = ['png','jpg','jpeg','gif','svg','webp','ico'].includes(ext);
-  const isDoc   = ['docx','xlsx','pdf','pptx'].includes(ext);
-
-  const win = window.open('', '_blank');
-  if (!win) return;
-
-  // Write loading state immediately
-  win.document.write(`<!DOCTYPE html><html><head>
-  <meta charset="UTF-8">
-  <title>${fname}</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
-  <style>
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    :root{--bg:#0e0e12;--surface:rgba(255,255,255,.04);--border:rgba(255,255,255,.08);
-      --border-g:rgba(212,175,100,.3);--gold:#d4af64;--gold-dim:rgba(212,175,100,.1);
-      --text:#ede8e0;--text2:#9e9888;--text3:#5c5850;}
-    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;
-      min-height:100vh;padding:0;}
-    body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
-      background:radial-gradient(ellipse 80% 50% at 50% -5%,rgba(212,175,100,.22) 0%,rgba(212,175,100,.06) 45%,transparent 70%)}
-    .topbar{position:sticky;top:0;z-index:100;background:rgba(14,14,18,.92);
-      backdrop-filter:blur(16px);border-bottom:1px solid var(--border);
-      padding:14px 32px;display:flex;align-items:center;gap:16px;}
-    .topbar-brand{font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;
-      color:var(--gold);letter-spacing:-.01em;}
-    .topbar-sep{color:var(--text3);font-size:.9rem}
-    .topbar-path{font-family:'DM Mono',monospace;font-size:.78rem;color:var(--text2);
-      word-break:break-all;flex:1;}
-    .topbar-path .fname{color:var(--text);font-weight:500}
-    .badge{font-family:'DM Mono',monospace;font-size:.58rem;padding:3px 9px;border-radius:6px;
-      border:1px solid var(--border-g);background:var(--gold-dim);color:var(--gold);
-      text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
-    .content{max-width:900px;margin:0 auto;padding:48px 32px 80px;position:relative;z-index:1;}
-    .loading{text-align:center;padding:80px 20px;color:var(--text3);font-family:'DM Mono',monospace;font-size:.8rem;letter-spacing:.06em;}
-    .loading-dot{display:inline-block;width:6px;height:6px;border-radius:50%;
-      background:var(--gold);margin:0 3px;animation:ld .9s infinite;opacity:.3}
-    .loading-dot:nth-child(2){animation-delay:.2s}
-    .loading-dot:nth-child(3){animation-delay:.4s}
-    @keyframes ld{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:1;transform:translateY(-4px)}}
-    /* Plain text / code */
-    pre{font-family:'DM Mono',monospace;font-size:.82rem;line-height:1.75;color:#c8c0b0;
-      background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:14px;
-      padding:28px 32px;overflow-x:auto;white-space:pre-wrap;word-break:break-word;
-      animation:fadeIn .4s ease}
-    /* Markdown */
-    .md-body{animation:fadeIn .4s ease;line-height:1.8}
-    .md-body h1,.md-body h2,.md-body h3,.md-body h4{font-family:'Playfair Display',serif;
-      color:var(--text);margin:1.8em 0 .6em;line-height:1.2}
-    .md-body h1{font-size:2rem;padding-bottom:.4em;border-bottom:1px solid var(--border)}
-    .md-body h2{font-size:1.4rem;padding-bottom:.3em;border-bottom:1px solid rgba(255,255,255,.05)}
-    .md-body h3{font-size:1.1rem;color:var(--gold)}
-    .md-body p{margin:.8em 0;color:var(--text2);font-weight:300}
-    .md-body a{color:var(--gold);text-decoration:underline;text-underline-offset:3px}
-    .md-body strong{color:var(--text);font-weight:500}
-    .md-body em{color:var(--text2);font-style:italic}
-    .md-body code{font-family:'DM Mono',monospace;font-size:.82em;background:rgba(212,175,100,.1);
-      border:1px solid rgba(212,175,100,.2);border-radius:4px;padding:1px 6px;color:var(--gold)}
-    .md-body pre{margin:1.2em 0}
-    .md-body pre code{background:none;border:none;padding:0;color:#c8c0b0;font-size:.82rem}
-    .md-body ul,.md-body ol{padding-left:1.6em;margin:.6em 0;color:var(--text2)}
-    .md-body li{margin:.3em 0}
-    .md-body blockquote{border-left:3px solid var(--gold);padding:.4em 1em;
-      margin:1em 0;background:var(--gold-dim);border-radius:0 8px 8px 0;color:var(--text2)}
-    .md-body hr{border:none;border-top:1px solid var(--border);margin:2em 0}
-    .md-body table{width:100%;border-collapse:collapse;margin:1em 0;font-size:.88rem}
-    .md-body th{background:rgba(212,175,100,.1);color:var(--gold);padding:10px 14px;
-      text-align:left;border:1px solid var(--border-g);font-weight:500}
-    .md-body td{padding:8px 14px;border:1px solid var(--border);color:var(--text2);vertical-align:top}
-    .md-body tr:nth-child(even) td{background:rgba(255,255,255,.02)}
-    .md-body img{max-width:100%;border-radius:8px;margin:.6em 0}
-    /* Image viewer */
-    .img-wrap{text-align:center;animation:fadeIn .4s ease}
-    .img-wrap img{max-width:100%;border-radius:12px;border:1px solid var(--border);
-      box-shadow:0 20px 60px rgba(0,0,0,.5)}
-    /* Binary notice */
-    .binary-notice{background:rgba(212,175,100,.06);border:1px solid var(--border-g);
-      border-radius:14px;padding:32px;text-align:center;animation:fadeIn .4s ease}
-    .binary-notice h3{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--gold);margin-bottom:10px}
-    .binary-notice p{font-size:.88rem;color:var(--text2);line-height:1.7;margin-bottom:20px}
-    .binary-notice a{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(140deg,#d4af64,#b8922c);
-      color:#0e0c08;padding:10px 22px;border-radius:10px;font-size:.88rem;font-weight:500;
-      text-decoration:none;transition:transform .2s,box-shadow .2s}
-    .binary-notice a:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(212,175,100,.3)}
-    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-  </style>
-  </head><body>
-  <div class="topbar">
-    <span class="topbar-brand">Tech Tips by LLM</span>
-    <span class="topbar-sep">/</span>
-    <span class="topbar-path" id="tp-path">Loading…</span>
-    <span class="badge" id="tp-badge">FILE</span>
-  </div>
-  <div class="content" id="content">
-    <div class="loading">
-      <div class="loading-dot"></div><div class="loading-dot"></div><div class="loading-dot"></div>
-    </div>
-  </div>
-  <script>
-  const path="${path.replace(/\\/g,'/')}";
-  const type="${type}";
-  const ext="${ext}";
-  const fname="${fname}";
-  const rawUrl="${rawUrl}";
-  const badgeLabels={readme:'Readme',doc:'Doc',code:'Code',config:'Config',test:'Test',file:'File'};
-
-  // Set topbar
-  const parts=path.split('/');const fn=parts.pop();const dir=parts.join('/');
-  document.getElementById('tp-path').innerHTML=(dir?'<span style="color:var(--text3)">'+dir+'/</span>':'')+
-    '<span class="fname">'+fn+'</span>';
-  document.getElementById('tp-badge').textContent=badgeLabels[type]||'File';
-
-  function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
-
-  // Simple markdown → HTML renderer
-  function renderMd(md){
-    let h=md
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-      // fenced code
-      .replace(/\`\`\`([^\n]*)\n([\s\S]*?)\`\`\`/g,(_,lang,code)=>'<pre><code>'+code+'</code></pre>')
-      // headings
-      .replace(/^#{6}\s(.+)$/gm,'<h6>$1</h6>')
-      .replace(/^#{5}\s(.+)$/gm,'<h5>$1</h5>')
-      .replace(/^#{4}\s(.+)$/gm,'<h4>$1</h4>')
-      .replace(/^###\s(.+)$/gm,'<h3>$1</h3>')
-      .replace(/^##\s(.+)$/gm,'<h2>$1</h2>')
-      .replace(/^#\s(.+)$/gm,'<h1>$1</h1>')
-      // hr
-      .replace(/^[-*]{3,}$/gm,'<hr>')
-      // blockquote
-      .replace(/^&gt;\s?(.+)$/gm,'<blockquote>$1</blockquote>')
-      // bold / italic / inline code
-      .replace(/\*\*\*(.+?)\*\*\*/g,'<strong><em>$1</em></strong>')
-      .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
-      .replace(/\*(.+?)\*/g,'<em>$1</em>')
-      .replace(/\`([^\`]+)\`/g,'<code>$1</code>')
-      // links & images
-      .replace(/!\[([^\]]*)\]\(([^)]+)\)/g,'<img alt="$1" src="$2">')
-      .replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank">$1</a>')
-      // lists
-      .replace(/^\s*[-*+]\s(.+)$/gm,'<li>$1</li>')
-      .replace(/(<li>[\s\S]*?<\/li>)/g,'<ul>$1</ul>')
-      .replace(/<\/ul>\s*<ul>/g,'')
-      // paragraphs
-      .replace(/\n{2,}/g,'</p><p>')
-    return '<p>'+h+'</p>';
-  }
-
-  fetch(rawUrl)
-    .then(r=>{
-      if(!r.ok) throw new Error('Could not load file ('+r.status+')');
-      return r.arrayBuffer();
-    })
-    .then(buf=>{
-      const bytes=new Uint8Array(buf);
-      // Check for binary (non-text) content
-      let isBinary=false;
-      for(let i=0;i<Math.min(bytes.length,512);i++){
-        if(bytes[i]===0){isBinary=true;break}
-      }
-      const el=document.getElementById('content');
-      if(isBinary||['docx','xlsx','pdf','pptx','doc','xls'].includes(ext)){
-        el.innerHTML='<div class="binary-notice"><h3>Binary File</h3><p>This file type ('+ext.toUpperCase()+') cannot be displayed as text in the browser.</p></div>';
-        return;
-      }
-      const text=new TextDecoder('utf-8').decode(buf);
-      if(['md','markdown','rst'].includes(ext)){
-        el.innerHTML='<div class="md-body">'+renderMd(text)+'</div>';
-      } else if(['png','jpg','jpeg','gif','svg','webp','ico'].includes(ext)){
-        el.innerHTML='<div class="img-wrap"><img src="'+rawUrl+'" alt="'+fname+'"></div>';
-      } else {
-        el.innerHTML='<pre>'+escHtml(text)+'</pre>';
-      }
-    })
-    .catch(err=>{
-      document.getElementById('content').innerHTML='<div class="err" style="background:rgba(224,112,112,.07);border:1px solid rgba(224,112,112,.2);border-radius:12px;padding:20px;font-family:DM Mono,monospace;font-size:.8rem;color:#e07070">⚠ '+err.message+'</div>';
-    });
-  <\/script>
-  </body></html>`);
-  win.document.close();
-}
-</script>
 </body>
 </html>
